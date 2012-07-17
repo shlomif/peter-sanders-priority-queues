@@ -1,0 +1,22 @@
+This is a maintenance and update version of Peter Sanders’ code from this
+paper:
+
+http://www.mpi-inf.mpg.de/~sanders/papers/spqjea.ps.gz
+
+It was originally found here:
+
+http://www.mpi-inf.mpg.de/~sanders/programs/spq/
+
+Prof. Sanders has kinda licensed it under the Boost Software License
+open source license:
+
+http://en.wikipedia.org/wiki/Boost_Software_License
+
+Note that a modified version of some of this code is available for TPIE
+here:
+
+http://madalgo.au.dk/Trac-tpie/ticket/15
+
+Regards,
+
+    Shlomi Fish, shlomif@cpan.org, http://www.shlomifish.org/ .
