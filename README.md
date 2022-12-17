@@ -1,18 +1,18 @@
 ```
 CPU:
 
-	Intel(R) Pentium(R) Silver N6000 @ 1.10GHz
+    Intel(R) Pentium(R) Silver N6000 @ 1.10GHz
 
-	Base speed:	1.11 GHz
-	Sockets:	1
-	Cores:	4
-	Logical processors:	4
-	Virtualization:	Enabled
-	L1 cache:	256 KB
-	L2 cache:	1.5 MB
-	L3 cache:	4.0 MB
-
-	Speed	3.01 GHz
+    Speed    3.01 GHz
+    
+    Base speed:            1.11 GHz
+    Sockets:               1
+    Cores:                 4
+    Logical processors:    4
+    Virtualization:        Enabled
+    L1 cache:              256 KB
+    L2 cache:              1.5 MB
+    L3 cache:              4.0 MB
 ```
 
 BENCHMARK `KNH` IMPL
