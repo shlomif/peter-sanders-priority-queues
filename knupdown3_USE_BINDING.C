@@ -8,38 +8,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "knheap_c_binding.h"
+
 #define DEBUGLEVEL 0
 #include "util.h"
-//#define KNH
-//#define H2
-//#define H4
-//#define HSLOW
-
-#ifdef KNH
-#  include "knheap.C"
-#  define HTYPE KNHeap<int, int> 
-#  define HINIT heap(INT_MAX, -INT_MAX)
-#else
-#  ifdef H4
-#    include "heap4.h"
-#    define HTYPE Heap4<int, int> 
-#    define HINIT heap(INT_MAX, -INT_MAX, n)
-#  else
-#    ifdef H2
-#      include "heap2.h"
-#      define HTYPE Heap2<int, int> 
-#      define HINIT heap(INT_MAX, -INT_MAX, n)
-#    else 
-#      ifdef HSLOW
-#        include "heap-CLR.h"
-#        define HTYPE Heap2<int, int> 
-#        define HINIT heap(INT_MAX, -INT_MAX, n)
-#      else
-#        error must define either: KNH, H2, H4, HSLOW
-#      endif
-#    endif
-#  endif
-#endif
 
 #define RANDOM(n) (xrand() % (n))
 static unsigned int xseed = 0x11223344;
@@ -71,14 +43,16 @@ double TI, TD;
 double TIR, TDR;
 double TIRAND, TDRAND;
 double TIRANDR, TDRANDR;
-inline void onePass(HTYPE& heap, int n, int curr, int max)
+
+inline void onePass(void* heap, int n, int curr, int max)
 {
   TI = 0; TD = 0;
   TIR = 0; TDR = 0;
   TIRAND = 0; TDRAND = 0;
   TIRANDR = 0; TDRANDR = 0;
 
-  int j, k, v;
+  int j, k;
+  void* v;
   double insertSum=0, deleteSum=0;
 
   int *keys = (int*)malloc(sizeof(int) * n);
@@ -96,7 +70,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    KNHeap__insert(heap, keys[j], (void*)keys[j]);
     double e = cpuTime();
     TIRAND += e - s;
     insertSum += keys[j];
@@ -109,7 +83,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    KNHeap__deleteMin(heap, &k, &v);
     double e = cpuTime();
     deleteSum += k;
     TDRAND += e - s;
@@ -124,7 +98,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = n-1;  j != -1;  j--) {
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    KNHeap__insert(heap, keys[j], (void*)keys[j]);
     double e = cpuTime();
     TIRANDR += e - s;
     insertSum += keys[j];
@@ -137,7 +111,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    KNHeap__deleteMin(heap, &k, &v);
     double e = cpuTime();
     deleteSum += k;
     TDRANDR += e - s;
@@ -153,7 +127,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   for (j = 0;  j < n;  j++) {
     keys[j] = j+1;
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    KNHeap__insert(heap, keys[j], (void*)keys[j]);
     double e = cpuTime();
     TI += e - s;
     insertSum += keys[j];
@@ -166,7 +140,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    KNHeap__deleteMin(heap, &k, &v);
     double e = cpuTime();
     deleteSum += k;
     TD += e - s;
@@ -181,7 +155,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = n-1;  j != -1;  j--) {
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    KNHeap__insert(heap, keys[j], (void*)keys[j]);
     double e = cpuTime();
     TIR += e - s;
     insertSum += keys[j];
@@ -195,14 +169,14 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    KNHeap__deleteMin(heap, &k, &v);
     double e = cpuTime();
     deleteSum += k;
     TDR += e - s;
     Assert(k == j+1);
     //std::cout << "rev seq [" << k << ", " << v << "] out\n";
   }
-  Assert(heap.getSize() == 0);
+  Assert(KNHeap__getSize(heap) == 0);
   Assert(deleteSum == insertSum);
   puts("done");
 }
@@ -236,12 +210,6 @@ int main(int argc, char **argv)
     }
   }
   repeat++;
-  //#ifdef H2
-  //HTYPE *temp = new HTYPE(INT_MAX, -INT_MAX);
-  //HTYPE& heap =*temp;
-  //#else
-  HTYPE HINIT;
-  //#endif
 
   #define DECLA(p, title) const char * field_##p = title; int len_##p = strlen(title); char ** array_##p = new char*[repeat]; for(int i = 0; i < repeat; i++) array_##p [i] = new char[4096];
   #define DELA(p, unused) for(int i = 0; i < repeat; i++) delete[] array_##p[i]; delete[] array_##p;
@@ -257,6 +225,8 @@ int main(int argc, char **argv)
   DECLA(i, "delete (rs)");
 
   #define M(p) len_##p = max(len_##p, strlen(array_##p [i]))
+
+  void * heap = KNHeap__create();
 
   for (int i = 0; i < repeat; i++) {
     onePass(heap, n, i, repeat);
@@ -281,6 +251,8 @@ int main(int argc, char **argv)
     M(h);
     M(i);
   }
+  
+  KNHeap__destroy(heap);
 
   #define F(p) len_##p, field_##p
   #define V(p) len_##p, array_##p [i]
@@ -310,4 +282,3 @@ int main(int argc, char **argv)
 
   return 0;
 }
-

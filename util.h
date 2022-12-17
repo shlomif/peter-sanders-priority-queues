@@ -95,7 +95,6 @@ inline double limit(double x, double bound)
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <time.h>
 #include <errno.h>
 
 typedef enum clockid_t {
@@ -119,7 +118,7 @@ struct timespec64bit {
 #define NS_PER_HNS      (100ULL)    // NS = nanoseconds
 #define NS_PER_SEC      (MS_PER_SEC * US_PER_MS * NS_PER_US)
 
-static int clock_gettime_monotonic(struct timespec64bit *tv)
+inline int clock_gettime_monotonic(struct timespec64bit *tv)
 {
     static LARGE_INTEGER ticksPerSec;
     LARGE_INTEGER ticks;
@@ -142,7 +141,7 @@ static int clock_gettime_monotonic(struct timespec64bit *tv)
     return 0;
 }
 
-static int clock_gettime_realtime(struct timespec64bit *tv)
+inline int clock_gettime_realtime(struct timespec64bit *tv)
 {
     FILETIME ft;
     ULARGE_INTEGER hnsTime;
@@ -162,7 +161,7 @@ static int clock_gettime_realtime(struct timespec64bit *tv)
     return 0;
 }
 
-int clock_gettime(clockid_t type, struct timespec64bit *tp)
+inline int clock_gettime(clockid_t type, struct timespec64bit *tp)
 {
     if (type == CLOCK_MONOTONIC)
     {
