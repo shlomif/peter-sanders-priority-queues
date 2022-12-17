@@ -3,16 +3,28 @@
 #define HEAP4
 #include "util.h"
 
-const unsigned long LineSize = 64; // cache line size (or multiple)
+// on a LLP64 system:
+//   sizeof(long)      == sizeof(int)
+//   sizeof(long)      != sizeof(void*)
+//   sizeof(long long) != sizeof(int)
+//   sizeof(long long) == sizeof(void*)
+
+// on a LP64 system:
+//   sizeof(long)      != sizeof(int)
+//   sizeof(long)      == sizeof(void*)
+//   sizeof(long long) != sizeof(int)
+//   sizeof(long long) == sizeof(void*)
+
+const unsigned long long LineSize = 64; // cache line size (or multiple)
 
 template <class Key, class Value>
 struct KNElement {Key key; Value value;};
 
 // align an address
 // require: sz is a power of two
-inline char *knAlign(void *p, unsigned long sz)
+inline char *knAlign(void *p, unsigned long long sz)
 {
-  return (char*)(((unsigned long)p + (sz - 1)) & ~(sz - 1));
+  return (char*)(((unsigned long long)p + (sz - 1)) & ~(sz - 1));
 }//////////////////////////////////////////////////////////////////////
 // fixed size 4-ary heap
 template <class Key, class Value>
