@@ -10,7 +10,7 @@
 
 #define DEBUGLEVEL 0
 #include "util.h"
-#define KNH
+//#define KNH
 //#define H2
 //#define H4
 //#define HSLOW
@@ -34,6 +34,8 @@
 #        include "heap-CLR.h"
 #        define HTYPE Heap2<int, int> 
 #        define HINIT heap(INT_MAX, -INT_MAX, n)
+#      else
+#        error must define either: KNH, H2, H4, HSLOW
 #      endif
 #    endif
 #  endif
