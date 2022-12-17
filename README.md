@@ -21,7 +21,7 @@ CPU:
 	Speed	3.01 GHz
 ```
 
-10 million keys (10,000,000)
+10 million keys (10,000,000) | KN HEAP (knheap)
 
 ```
 r = random
