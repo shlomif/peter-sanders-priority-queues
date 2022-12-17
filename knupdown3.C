@@ -225,7 +225,14 @@ int main(int argc, char **argv)
   }
   int i;
   int repeat = 1;
-  if (argc > 2) repeat = atoi(argv[2]);
+  if (argc > 2) {
+    repeat = atoi(argv[2]);
+    if (repeat < 0) {
+      puts("iterations must be 0 or greater");
+      puts("usage: prog <elements> <iterations (default = 1)>");
+      return -1;
+    }
+  }
   repeat++;
   //#ifdef H2
   //HTYPE *temp = new HTYPE(INT_MAX, -INT_MAX);
