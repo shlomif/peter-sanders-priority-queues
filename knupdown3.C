@@ -8,8 +8,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-using namespace std;
-
 #define DEBUGLEVEL 0
 #include "util.h"
 #define KNH
@@ -41,61 +39,194 @@ using namespace std;
 #  endif
 #endif
 
+#define RANDOM(n) (xrand() % (n))
+static unsigned int xseed = 0x11223344;
+static inline unsigned int xrand(void) {
+	return (((xseed = xseed * 214013L + 2531011L) >> 16) & 0x7fffffff);
+}
 
-#define rand32() (ran32State = 1664525 * ran32State + 1013904223)
-#define getRandom() ((rand32()), (int)(ran32State >> 2))
+// generate keys
+static inline void random_keys(int *keys, int count, int seed)
+{
+	int save_seed = xseed;
+	int *array = (int*)malloc(sizeof(int) * count);
+	int length = count, i;
+	xseed = seed;
+	for (i = 0; i < count; i++) {
+		array[i] = i;
+	}
+	for (i = 0; i < length; i++) {
+		int pos = xrand() % count;
+		int key = array[pos];
+		keys[i] = key;
+		array[pos] = array[--count];
+	}
+	free(array);
+	xseed = save_seed;
+}
 
-inline void onePass(HTYPE& heap, int n)
-{ int j, newElem, k, v;
+double TI, TD;
+double TIR, TDR;
+double TIRAND, TDRAND;
+double TIRANDR, TDRANDR;
+inline void onePass(HTYPE& heap, int n, int curr, int max)
+{
+  TI = 0; TD = 0;
+  TIR = 0; TDR = 0;
+  TIRAND = 0; TDRAND = 0;
+  TIRANDR = 0; TDRANDR = 0;
+
+  int j, k, v;
   double insertSum=0, deleteSum=0;
-  static int ran32State = 42 << 20;
-  
-  Debug3(cout << heap.getSize());
-  Assert(heap.getSize() == 0);
-  for (j = 0;  j < n;  j++) {   
-    newElem = getRandom();
-    heap.insert(newElem, j);
-    Debug0(insertSum += newElem);
-    Debug3(cout << newElem << "in ");
-    
-    heap.deleteMin(&k, &v);
-    Debug0(deleteSum += k);
-    Debug3(cout << k << "out ");
-    
-    newElem = getRandom();
-    heap.insert(newElem, j + 1);
-    Debug0(insertSum += newElem);
-    Debug3(cout << newElem << "in ");
-  }
-  Assert0(heap.getSize() == n);
-  for (j = 0;  j < n;  j++) {   
-    heap.deleteMin(&k, &v);
-    Debug0(deleteSum += k);
-    Debug3(cout << k << "out ");
 
-    newElem = getRandom();
-    heap.insert(newElem, j);
-    Debug0(insertSum += newElem);
-    Debug3(cout << newElem << "in ");
-    
-    heap.deleteMin(&k, &v);
-    Debug0(deleteSum += k);
-    Debug3(cout << k << "out ");
+	int *keys = (int*)malloc(sizeof(int) * n);
+  if (keys == NULL) {
+    std::cout << "failed to allocate keys\n";
   }
-  Assert0(deleteSum == insertSum);
+  double s_ = cpuTime();
+  random_keys(keys, n, 0x11223344);
+  double e_ = cpuTime();
+  
+  if (curr == 0) {
+    printf("(warmup) inserting (r) ...\n");
+  } else {
+    printf("(%d of %d) inserting (r) ...\n", curr, max-1);
+  }
+  for (j = 0;  j < n;  j++) {
+    double s = cpuTime();
+    heap.insert(keys[j], keys[j]);
+    double e = cpuTime();
+    TIRAND += e - s;
+    insertSum += keys[j];
+    //std::cout << "seq [" << keys[j] << ", " << keys[j] << "] in\n";
+  }
+  if (curr == 0) {
+    printf("(warmup) deleting (r) ...\n");
+  } else {
+    printf("(%d of %d) deleting (r) ...\n", curr, max-1);
+  }
+  for (j = 0;  j < n;  j++) {
+    double s = cpuTime();
+    heap.deleteMin(&k, &v);
+    double e = cpuTime();
+    deleteSum += k;
+    TDRAND += e - s;
+    Assert(k == j);
+    //std::cout << "seq [" << k << ", " << v << "] out\n";
+  }
+
+  if (curr == 0) {
+    printf("(warmup) inserting (rr) ...\n");
+  } else {
+    printf("(%d of %d) inserting (rr) ...\n", curr, max-1);
+  }
+  for (j = n-1;  j != -1;  j--) {
+    double s = cpuTime();
+    heap.insert(keys[j], keys[j]);
+    double e = cpuTime();
+    TIRANDR += e - s;
+    insertSum += keys[j];
+    //std::cout << "rev seq [" << keys[j] << ", " << keys[j] << "] in\n";
+  }
+  if (curr == 0) {
+    printf("(warmup) deleting (rr) ...\n");
+  } else {
+    printf("(%d of %d) deleting (rr) ...\n", curr, max-1);
+  }
+  for (j = 0;  j < n;  j++) {
+    double s = cpuTime();
+    heap.deleteMin(&k, &v);
+    double e = cpuTime();
+    deleteSum += k;
+    TDRANDR += e - s;
+    Assert(k == j);
+    //std::cout << "rev seq [" << k << ", " << v << "] out\n";
+  }
+
+  if (curr == 0) {
+    printf("(warmup) inserting (s) ...\n");
+  } else {
+    printf("(%d of %d) inserting (s) ...\n", curr, max-1);
+  }
+  for (j = 0;  j < n;  j++) {
+    keys[j] = j+1;
+    double s = cpuTime();
+    heap.insert(keys[j], keys[j]);
+    double e = cpuTime();
+    TI += e - s;
+    insertSum += keys[j];
+    //std::cout << "seq [" << keys[j] << ", " << keys[j] << "] in\n";
+  }
+  if (curr == 0) {
+    printf("(warmup) deleting (s) ...\n");
+  } else {
+    printf("(%d of %d) deleting (s) ...\n", curr, max-1);
+  }
+  for (j = 0;  j < n;  j++) {
+    double s = cpuTime();
+    heap.deleteMin(&k, &v);
+    double e = cpuTime();
+    deleteSum += k;
+    TD += e - s;
+    Assert(k == j+1);
+    //std::cout << "seq [" << k << ", " << v << "] out\n";
+  }
+
+  if (curr == 0) {
+    printf("(warmup) inserting (sr) ...\n");
+  } else {
+    printf("(%d of %d) inserting (sr) ...\n", curr, max-1);
+  }
+  for (j = n-1;  j != -1;  j--) {
+    double s = cpuTime();
+    heap.insert(keys[j], keys[j]);
+    double e = cpuTime();
+    TIR += e - s;
+    insertSum += keys[j];
+    //std::cout << "rev seq [" << keys[j] << ", " << keys[j] << "] in\n";
+  }
+  free(keys);
+  if (curr == 0) {
+    printf("(warmup) deleting (sr) ...\n");
+  } else {
+    printf("(%d of %d) deleting (sr) ...\n", curr, max-1);
+  }
+  for (j = 0;  j < n;  j++) {
+    double s = cpuTime();
+    heap.deleteMin(&k, &v);
+    double e = cpuTime();
+    deleteSum += k;
+    TDR += e - s;
+    Assert(k == j+1);
+    //std::cout << "rev seq [" << k << ", " << v << "] out\n";
+  }
   Assert(heap.getSize() == 0);
+  Assert(deleteSum == insertSum);
+  puts("done");
 }
 
 
 int main(int argc, char **argv)
 { 
-  Assert(argc > 1);
+  if (argc == 0) {
+    puts("usage: prog <elements> <iterations (default = 1)>");
+    return -1;
+  }
+  if (strlen(argv[1]) >= strlen("10000000000")) {
+    printf("elements number length cannot be larger than %zu characters\n", strlen("10000000000"));
+    puts("usage: prog <elements> <iterations (default = 1)>");
+    return -1;
+  }
   int n = atoi(argv[1]);
+  if (n < 0) {
+    puts("integer overflow from given element count");
+    puts("usage: prog <elements> <iterations (default = 1)>");
+    return -1;
+  }
   int i;
-  int ran32State = 42 << 20;
   int repeat = 1;
-  double startTime, endTime;
   if (argc > 2) repeat = atoi(argv[2]);
+  repeat++;
   //#ifdef H2
   //HTYPE *temp = new HTYPE(INT_MAX, -INT_MAX);
   //HTYPE& heap =*temp;
@@ -103,18 +234,71 @@ int main(int argc, char **argv)
   HTYPE HINIT;
   //#endif
 
-  // warmup
-  onePass(heap, n);
+  #define DECLA(p, title) const char * field_##p = title; int len_##p = strlen(title); char ** array_##p = new char*[repeat]; for(int i = 0; i < repeat; i++) array_##p [i] = new char[4096];
+  #define DELA(p, unused) for(int i = 0; i < repeat; i++) delete[] array_##p[i]; delete[] array_##p;
+  DECLA(a, "iteration");
+  DECLA(k, "keys");
+  DECLA(b, "insert (r)");
+  DECLA(c, "delete (r)");
+  DECLA(d, "insert (rr)");
+  DECLA(e, "delete (rr)");
+  DECLA(f, "insert (s)");
+  DECLA(g, "delete (s)");
+  DECLA(h, "insert (rs)");
+  DECLA(i, "delete (rs)");
 
-  startTime = cpuTime();
-  for (i = 0;  i < repeat;  i++) {
-    onePass(heap, n);
+  #define M(p) len_##p = max(len_##p, strlen(array_##p [i]))
+
+  for (int i = 0; i < repeat; i++) {
+    onePass(heap, n, i, repeat);
+    i == 0 ? sprintf(array_a[i], "warmup") : sprintf(array_a[i], "%d", i);
+    sprintf(array_k[i], "%d", n);
+    sprintf(array_b[i], "%g", TIRAND / CLOCKS_PER_SEC);
+    sprintf(array_c[i], "%g", TDRAND / CLOCKS_PER_SEC);
+    sprintf(array_d[i], "%g", TIRANDR / CLOCKS_PER_SEC);
+    sprintf(array_e[i], "%g", TDRANDR / CLOCKS_PER_SEC);
+    sprintf(array_f[i], "%g", TI / CLOCKS_PER_SEC);
+    sprintf(array_g[i], "%g", TD / CLOCKS_PER_SEC);
+    sprintf(array_h[i], "%g", TIR / CLOCKS_PER_SEC);
+    sprintf(array_i[i], "%g", TDR / CLOCKS_PER_SEC);
+    M(a);
+    M(k);
+    M(b);
+    M(c);
+    M(d);
+    M(e);
+    M(f);
+    M(g);
+    M(h);
+    M(i);
   }
-  endTime = cpuTime();
 
-  // output time per insert-delete-pair and this time over log n
-  double timePerPair = (endTime - startTime) / n / repeat / 3.0;
-  double timePerCompare = timePerPair / (log((double)n) / log(2.0));
-  cout << n << " " << timePerPair * 1e9 << " " << timePerCompare * 1e9 << endl;
+  #define F(p) len_##p, field_##p
+  #define V(p) len_##p, array_##p [i]
+
+  printf(
+    "r = random\ns = sequence\nrr = random, reversed\nrs = sequence, reversed\nall fields (except for iteration) are shown in seconds\n\n"
+    "%*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s\n",
+    F(a), F(k), F(b), F(c), F(d), F(e), F(f), F(g), F(h), F(i)
+  );
+
+  for (int i = 0; i < repeat; i++) {
+    printf(
+      "%*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s\n",
+      V(a), V(k), V(b), V(c), V(d), V(e), V(f), V(g), V(h), V(i)
+    );
+  }
+
+
+  DELA(b, "insert (random) (seconds)");
+  DELA(c, "delete (random) (seconds)");
+  DELA(d, "insert (reverse, random) (seconds)");
+  DELA(e, "delete (reverse, random) (seconds)");
+  DELA(f, "insert (sequence) (seconds)");
+  DELA(g, "delete (sequence) (seconds)");
+  DELA(h, "insert (reverse, sequence) (seconds)");
+  DELA(i, "delete (reverse, sequence) (seconds)");
+
+  return 0;
 }
 

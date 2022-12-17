@@ -5,14 +5,16 @@
 // (insert (insert delete)^k)^N (delete (insert delete)^k)^N
 
 #include <limits.h>
-#include <iostream.h>
+#include <iostream>
 #include <stdlib.h>
 #include <math.h>
 
+using namespace std;
+
 #define DEBUGLEVEL 0
 #include "util.h"
-//#define KNH
-#define H2
+#define KNH
+//#define H2
 //#define H4
 
 #ifdef KNH
