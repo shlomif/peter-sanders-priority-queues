@@ -317,10 +317,18 @@ int main(int argc, char **argv)
   #define F(p) len_##p, field_##p
   #define V(p) len_##p, array_##p [i]
 
+#define STR1(X) #X
+#define STR(X) STR1(X)
+
   printf(
-    "r = random\ns = sequence\nrr = random, reversed\nrs = sequence, reversed\nall fields (except for iteration) are shown in seconds\n\n"
+    "r = random\ns = sequence\nrr = random, reversed\nrs = sequence, reversed\nall fields (except for iteration) are shown in seconds\n\nintegration_type: %s\n\n"
     "%*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s\n",
-    F(a), F(k), F(b), F(c), F(d), F(e), F(f), F(g), F(h), F(i)
+#ifdef KNH_BINDING
+      STR((KN____ARRAY)),
+#else
+      STR((HTYPE)),
+#endif
+      F(a), F(k), F(b), F(c), F(d), F(e), F(f), F(g), F(h), F(i)
   );
 
   for (int i = 0; i < repeat; i++) {
