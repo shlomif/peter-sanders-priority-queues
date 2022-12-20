@@ -40,10 +40,10 @@ class Heap4 {
   int finalLayerDist; // distance to end of layer
 public:
   Heap4(Key sup, Key infimum, int cap) :
-    capacity(cap), 
+    capacity(cap),
     rawData(new Element[capacity + 4 + (LineSize-1)/sizeof(Element) + 1]),
     data((Element*)knAlign(rawData, LineSize))
-  { 
+  {
     data[0].key = infimum; // sentinel
     data[capacity + 1].key = sup;
     data[capacity + 2].key = sup;
@@ -72,7 +72,7 @@ inline void Heap4<Key, Value>::
 reset() {
   size = 0;
   finalLayerSize = 1;
-  finalLayerDist = 0; 
+  finalLayerDist = 0;
   Key sup = getSupremum();
   for (int i = 1;  i <= capacity;  i++) {
     data[i].key = sup;
@@ -97,7 +97,7 @@ deleteMinBasic()
   int delta;
 
   // first move up elements on a min-path
-  int hole = 1; 
+  int hole = 1;
   int succ = 2;
   int layerSize = 4; // size of succ's layer
   int layerPos  = 0; // pos of succ within its layer
@@ -112,7 +112,7 @@ deleteMinBasic()
     minKey = data[succ].key;
     delta = 0;
 
-    // I could save a few assignments using 
+    // I could save a few assignments using
     // a complete case distincition but
     // this costs in terms of instruction cache load
     otherKey = data[succ + 1].key;
@@ -145,14 +145,14 @@ deleteMinBasic()
   int pred = hole + layerDist - layerSize; // end of pred's layer for now
   layerSize >>= 2; // now size of pred's layer
   layerDist >>= 2; // now pred's pos in layer
-  pred = pred - layerDist; // finally preds index 
+  pred = pred - layerDist; // finally preds index
   while (data[pred].key > bubble) { // must terminate since inf at root
     data[hole] = data[pred];
     hole = pred;
     pred = hole + layerDist - layerSize; // end of hole's layer for now
     layerSize >>= 2; // now size of pred's layer
-    layerDist >>= 2; 
-    pred = pred - layerDist; // finally preds index 
+    layerDist >>= 2;
+    pred = pred - layerDist; // finally preds index
   }
 
   // finally move data to hole
@@ -179,11 +179,11 @@ insert(Key k, Value v)
     finalLayerDist = finalLayerSize - 1;
   }
   size++;
-  int hole = size; 
+  int hole = size;
   int pred = hole + layerDist - layerSize; // end of preds's layer for now
   layerSize >>= 2; // now size of pred's layer
-  layerDist >>= 2; 
-  pred = pred - layerDist; // finally preds index 
+  layerDist >>= 2;
+  pred = pred - layerDist; // finally preds index
   Key predKey = data[pred].key;
   while (predKey > k) { // must terminate due to sentinel at 0
     data[hole].key   = predKey;
@@ -191,8 +191,8 @@ insert(Key k, Value v)
     hole = pred;
     pred = hole + layerDist - layerSize; // end of preds's layer for now
     layerSize >>= 2; // now size of pred's layer
-    layerDist >>= 2; 
-    pred = pred - layerDist; // finally preds index 
+    layerDist >>= 2;
+    pred = pred - layerDist; // finally preds index
     predKey = data[pred].key;
   }
 

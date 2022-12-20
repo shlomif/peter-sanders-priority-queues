@@ -17,14 +17,14 @@ class Heap2 {
   int supremum;
   int size;  // index of last used element
 public:
-  Heap2(Key sup, Key infimum, int cap):size(0),capacity(cap) { 
+  Heap2(Key sup, Key infimum, int cap):size(0),capacity(cap) {
     data = new Element[cap + 2];
     data[0].key = infimum; // sentinel
     data[capacity + 1].key = sup;
     supremum = sup;
     reset();
   }
-  ~Heap2() { delete data; } 
+  ~Heap2() { delete data; }
   Key getSupremum() { return supremum; }
   void reset();
   int   getSize()     const { return size; }
@@ -53,7 +53,7 @@ reset() {
     data[i].key = sup;
   }
   // if this becomes a bottle neck
-  // we might want to replace this by log KNN 
+  // we might want to replace this by log KNN
   // memcpy-s
 }
 
@@ -64,7 +64,7 @@ deleteMinBasic()
   Assert2(size > 0);
 
   // first move up elements on a min-path
-  int hole = 1; 
+  int hole = 1;
   int succ = 2;
   int sz   = size;
   Element *dat = data;
@@ -150,7 +150,7 @@ insert(Key k, Value v)
 
   Element *dat = data;
   size++;
-  int hole = size; 
+  int hole = size;
   int pred = hole >> 1;
   Key predKey = dat[pred].key;
   while (predKey > k) { // must terminate due to sentinel at 0

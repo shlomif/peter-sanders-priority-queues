@@ -4,7 +4,7 @@ CPU:
     Intel(R) Pentium(R) Silver N6000 @ 1.10GHz
 
     Speed    3.01 GHz
-    
+
     Base speed:            1.11 GHz
     Sockets:               1
     Cores:                 4

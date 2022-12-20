@@ -18,26 +18,26 @@
     Key      winnerKey   = regEntry[0].key;
     Element *winnerPos;
     Key sup = dummy.key; // supremum
-    
+
     Assert2(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
-      
+
       // write result
       to->key   = winnerKey;
       to->value = winnerPos->value;
-      
+
       // advance winner segment
       winnerPos++;
       regCurrent[winnerIndex] = winnerPos;
       winnerKey = winnerPos->key;
-      
+
       // remove winner segment if empty now
-      if (winnerKey == sup) { 
-        deallocateSegment(winnerIndex); 
-      } 
+      if (winnerKey == sup) {
+        deallocateSegment(winnerIndex);
+      }
       to++;
-      
+
       // update looser tree
 #define TreeStep(L)\
       if (1 << LogK >= 1 << L) {\
@@ -61,8 +61,8 @@
       TreeStep(3);
       TreeStep(2);
       TreeStep(1);
-#undef TreeStep      
+#undef TreeStep
     }
     regEntry[0].index = winnerIndex;
-    regEntry[0].key   = winnerKey;  
+    regEntry[0].key   = winnerKey;
   }

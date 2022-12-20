@@ -17,14 +17,14 @@ class Heap2 {
   int supremum;
   int size;  // index of last used element
 public:
-  Heap2(Key sup, Key infimum, int cap):size(0),capacity(cap) { 
+  Heap2(Key sup, Key infimum, int cap):size(0),capacity(cap) {
     data = new Element[cap + 2];
     data[0].key = infimum; // sentinel
     data[capacity + 1].key = sup;
     supremum = sup;
     reset();
   }
-  ~Heap2() { delete data; } 
+  ~Heap2() { delete data; }
   Key getSupremum() { return supremum; }
   void reset();
   int   getSize()     const { return size; }
@@ -59,7 +59,7 @@ reset() {
     data[i].key = sup;
   }
   // if this becomes a bottle neck
-  // we might want to replace this by log KNN 
+  // we might want to replace this by log KNN
   // memcpy-s
 }
 
@@ -144,7 +144,7 @@ insert(Key k, Value v)
   Debug4(cout << "insert(" << k << ", " << v << ")" << endl);
 
   size++;
-  int hole = size; 
+  int hole = size;
   while (hole > 1 && data[hole >> 1].key > k) {
     data[hole] = data[hole >> 1];
     hole = hole >> 1;

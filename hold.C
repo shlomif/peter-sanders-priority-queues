@@ -17,22 +17,22 @@
 
 #ifdef KNH
 #  include "knheap.C"
-#  define HTYPE KNHeap<int, int> 
+#  define HTYPE KNHeap<int, int>
 #  define HINIT heap(INT_MAX, -INT_MAX)
 #else
 #  ifdef H4
 #    include "heap4.h"
-#    define HTYPE Heap4<int, int> 
+#    define HTYPE Heap4<int, int>
 #    define HINIT heap(INT_MAX, -INT_MAX, n)
 #  else
 #    ifdef H2
 #      include "heap2.h"
-#      define HTYPE Heap2<int, int> 
+#      define HTYPE Heap2<int, int>
 #      define HINIT heap(INT_MAX, -INT_MAX, n)
-#    else 
+#    else
 #      ifdef HSLOW
 #        include "heap-CLR.h"
-#        define HTYPE Heap2<int, int> 
+#        define HTYPE Heap2<int, int>
 #        define HINIT heap(INT_MAX, -INT_MAX, n)
 #      endif
 #    endif
@@ -47,23 +47,23 @@ inline void onePass(HTYPE& heap, int n)
 { int j, newElem, k, v, old;
   long long insertSum=0, deleteSum=0;
   static int ran32State = 42 << 20;
-  
+
   Debug3(cout << heap.getSize());
   Assert(heap.getSize() == 0);
   // build heap
-  for (j = 0;  j < n;  j++) {   
+  for (j = 0;  j < n;  j++) {
     newElem = getRandom();
     heap.insert(newElem, j);
     Debug0(insertSum += newElem);
     Debug3(cout << newElem << "in ");
   }
-    
+
   // hold phase
   old = 0;
-  for (j = 0;  j < 2*n;  j++) {   
+  for (j = 0;  j < 2*n;  j++) {
     heap.deleteMin(&k, &v);
     Debug0(deleteSum += k);
-    Assert0(k >= old); 
+    Assert0(k >= old);
     Debug0(old = k);
     Debug3(cout << k << "out ");
 
@@ -74,9 +74,9 @@ inline void onePass(HTYPE& heap, int n)
   }
 
   Assert0(heap.getSize() == n);
- 
+
   // finish up
-  for (j = 0;  j < n;  j++) {   
+  for (j = 0;  j < n;  j++) {
     heap.deleteMin(&k, &v);
     Debug0(deleteSum += k);
     Debug3(cout << k << "out ");
@@ -88,7 +88,7 @@ inline void onePass(HTYPE& heap, int n)
 
 
 int main(int argc, char **argv)
-{ 
+{
   Assert(argc > 1);
   int n = atoi(argv[1]);
   int i;

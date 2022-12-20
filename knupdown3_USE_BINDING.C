@@ -62,7 +62,7 @@ inline void onePass(void* heap, int n, int curr, int max)
   double s_ = cpuTime();
   random_keys(keys, n, 0x11223344);
   double e_ = cpuTime();
-  
+
   if (curr == 0) {
     printf("(warmup) inserting (r) ...\n");
   } else {
@@ -183,7 +183,7 @@ inline void onePass(void* heap, int n, int curr, int max)
 
 
 int main(int argc, char **argv)
-{ 
+{
   if (argc == 0) {
     puts("usage: prog <elements> <iterations (default = 1)>");
     return -1;
@@ -251,7 +251,7 @@ int main(int argc, char **argv)
     M(h);
     M(i);
   }
-  
+
   KNHeap__destroy(heap);
 
   #define F(p) len_##p, field_##p

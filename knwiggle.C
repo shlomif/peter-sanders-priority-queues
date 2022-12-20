@@ -1,7 +1,7 @@
 // benchmark with (insert insert delMin)^N (insert delMin delMin)^N
 // just in time RNG
 // version 3: use easier to handle binary heaps
-// knwiggle: access sequence is 
+// knwiggle: access sequence is
 // (insert (insert delete)^k)^N (delete (insert delete)^k)^N
 
 #include <limits.h>
@@ -19,17 +19,17 @@ using namespace std;
 
 #ifdef KNH
 #  include "knheap.C"
-#  define HTYPE KNHeap<int, int> 
+#  define HTYPE KNHeap<int, int>
 #  define HINIT heap(INT_MAX, -INT_MAX)
 #else
 #  ifdef H4
 #    include "heap4.h"
-#    define HTYPE Heap4<int, int> 
+#    define HTYPE Heap4<int, int>
 #    define HINIT heap(INT_MAX, -INT_MAX, n)
 #  else
 #    ifdef H2
 #      include "heap2.h"
-#      define HTYPE Heap2<int, int> 
+#      define HTYPE Heap2<int, int>
 #      define HINIT heap(INT_MAX, -INT_MAX, n)
 #    endif
 #  endif
@@ -43,20 +43,20 @@ inline void onePass(HTYPE& heap, int k, int n)
 { int i, j, newElem, key, v;
   double insertSum=0, deleteSum=0;
   static int ran32State = 42 << 20;
-  
+
   Debug3(cout << heap.getSize());
   Assert(heap.getSize() == 0);
-  for (j = 0;  j < n;  j++) {   
+  for (j = 0;  j < n;  j++) {
     newElem = getRandom();
     heap.insert(newElem, j);
     Debug0(insertSum += newElem);
     Debug3(cout << newElem << "in ");
-    
+
     for (i = 0;  i < k;  i++) {
       heap.deleteMin(&key, &v);
       Debug0(deleteSum += key);
       Debug3(cout << key << "out ");
-      
+
       newElem = getRandom();
       heap.insert(newElem, j + 1);
       Debug0(insertSum += newElem);
@@ -64,7 +64,7 @@ inline void onePass(HTYPE& heap, int k, int n)
     }
   }
   Assert0(heap.getSize() == n);
-  for (j = 0;  j < n;  j++) {   
+  for (j = 0;  j < n;  j++) {
     heap.deleteMin(&key, &v);
     Debug0(deleteSum += key);
     Debug3(cout << key << "out ");
@@ -74,7 +74,7 @@ inline void onePass(HTYPE& heap, int k, int n)
       heap.insert(newElem, j);
       Debug0(insertSum += newElem);
       Debug3(cout << newElem << "in ");
-      
+
       heap.deleteMin(&key, &v);
       Debug0(deleteSum += key);
       Debug3(cout << key << "out ");
@@ -86,7 +86,7 @@ inline void onePass(HTYPE& heap, int k, int n)
 
 
 int main(int argc, char **argv)
-{ 
+{
   Assert(argc > 2);
   int n = atoi(argv[1]);
   int k = atoi(argv[2]);

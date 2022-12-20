@@ -17,22 +17,22 @@
 
 #ifdef KNH
 #  include "knheap.C"
-#  define HTYPE KNHeap<int, int> 
+#  define HTYPE KNHeap<int, int>
 #  define HINIT heap(INT_MAX, -INT_MAX)
 #else
 #  ifdef H4
 #    include "heap4.h"
-#    define HTYPE Heap4<int, int> 
+#    define HTYPE Heap4<int, int>
 #    define HINIT heap(INT_MAX, -INT_MAX, n)
 #  else
 #    ifdef H2
 #      include "heap2.h"
-#      define HTYPE Heap2<int, int> 
+#      define HTYPE Heap2<int, int>
 #      define HINIT heap(INT_MAX, -INT_MAX, n)
-#    else 
+#    else
 #      ifdef HSLOW
 #        include "heap-CLR.h"
-#        define HTYPE Heap2<int, int> 
+#        define HTYPE Heap2<int, int>
 #        define HINIT heap(INT_MAX, -INT_MAX, n)
 #      else
 #        error must define either: KNH, H2, H4, HSLOW
@@ -88,7 +88,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   double s_ = cpuTime();
   random_keys(keys, n, 0x11223344);
   double e_ = cpuTime();
-  
+
   if (curr == 0) {
     printf("(warmup) inserting (r) ...\n");
   } else {
@@ -209,7 +209,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
 
 
 int main(int argc, char **argv)
-{ 
+{
   if (argc == 0) {
     puts("usage: prog <elements> <iterations (default = 1)>");
     return -1;
