@@ -15,6 +15,10 @@
 //#define H4
 //#define HSLOW
 
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
+  #warning element order assertions are enabled, element removal will be checked for sorted order, define DISABLE_ELEMENT_ORDER_ASSERTIONS to disable this check
+#endif
+  
 #ifdef KNH
 #  include "knheap.C"
 #  define HTYPE KNHeap<int, int>
@@ -45,7 +49,7 @@
 #    endif
 #  endif
 #endif
-
+  
 #define RANDOM(n) (xrand() % (n))
 static unsigned int xseed = 0x11223344;
 static inline unsigned int xrand(void) {
@@ -76,6 +80,7 @@ double TI, TD;
 double TIR, TDR;
 double TIRAND, TDRAND;
 double TIRANDR, TDRANDR;
+
 #ifdef KNH_BINDING
 #define HEAP_INSERT(k, v) KNHeap__insert(heap, &k, reinterpret_cast<void*>(v))
 #define HEAP_REMOVE(k, v) KNHeap__deleteMin(heap, k, v)
@@ -133,7 +138,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
     double e = cpuTime();
     deleteSum += k;
     TDRAND += e - s;
-#ifndef KNH_BINDING
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j);
 #endif
     //std::cout << "seq [" << k << ", " << v << "] out\n";
@@ -163,7 +168,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
     double e = cpuTime();
     deleteSum += k;
     TDRANDR += e - s;
-#ifndef KNH_BINDING
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j);
 #endif
     //std::cout << "rev seq [" << k << ", " << v << "] out\n";
@@ -194,7 +199,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
     double e = cpuTime();
     deleteSum += k;
     TD += e - s;
-#ifndef KNH_BINDING
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j+1);
 #endif
     //std::cout << "seq [" << k << ", " << v << "] out\n";
@@ -225,7 +230,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
     double e = cpuTime();
     deleteSum += k;
     TDR += e - s;
-#ifndef KNH_BINDING
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j+1);
 #endif
     //std::cout << "rev seq [" << k << ", " << v << "] out\n";
