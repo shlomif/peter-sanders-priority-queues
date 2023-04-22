@@ -2,6 +2,8 @@ compiled as
 
 ```
 g++ -x c++ knupdown3.C -D KNH_BINDINGS -D KNH_BINDING_IMPL=knheap_c_binding.c
+
+see make.sh
 ```
 
 
