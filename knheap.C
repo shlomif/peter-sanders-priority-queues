@@ -1,5 +1,6 @@
 #include "knheap.h"
 #include <string.h>
+#include <iostream>
 ///////////////////////// LooserTree ///////////////////////////////////
 template <class Key, class Value>
 KNLooserTree<Key, Value>::

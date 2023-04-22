@@ -8,39 +8,62 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifndef DEBUGLEVEL
 #define DEBUGLEVEL 0
+#endif
+
 #include "util.h"
+
 //#define KNH
 //#define H2
 //#define H4
 //#define HSLOW
+
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
+  #warning element order assertions are enabled, element removal will be checked for sorted order, define DISABLE_ELEMENT_ORDER_ASSERTIONS to disable this check
+#endif
+
+#define KNH_STR2(X) #X
+#define KNH_STR(X) KNH_STR2(X)
+
+#ifndef KNH_BINDING_IMPL
+#define KNH_BINDING_IMPL knheap_c_binding.c
+#define KNH_BINDING_INCLUDE KNH_STR(KNH_BINDING_IMPL)
+#else
+#define KNH_BINDING_INCLUDE KNH_STR(KNH_BINDING_IMPL)
+#endif
 
 #ifdef KNH
 #  include "knheap.C"
 #  define HTYPE KNHeap<int, int>
 #  define HINIT heap(INT_MAX, -INT_MAX)
 #else
-#  ifdef H4
-#    include "heap4.h"
-#    define HTYPE Heap4<int, int>
-#    define HINIT heap(INT_MAX, -INT_MAX, n)
+#  ifdef KNH_BINDING
+#    include "knheap_c_binding.h"
+#    include KNH_BINDING_INCLUDE
 #  else
-#    ifdef H2
-#      include "heap2.h"
-#      define HTYPE Heap2<int, int>
+#    ifdef H4
+#      include "heap4.h"
+#      define HTYPE Heap4<int, int>
 #      define HINIT heap(INT_MAX, -INT_MAX, n)
 #    else
-#      ifdef HSLOW
-#        include "heap-CLR.h"
+#      ifdef H2
+#        include "heap2.h"
 #        define HTYPE Heap2<int, int>
 #        define HINIT heap(INT_MAX, -INT_MAX, n)
 #      else
-#        error must define either: KNH, H2, H4, HSLOW
+#        ifdef HSLOW
+#          include "heap-CLR.h"
+#          define HTYPE Heap2<int, int>
+#          define HINIT heap(INT_MAX, -INT_MAX, n)
+#        else
+#          error must define either: KNH, KNH_BINDING and KNH_BINDING_IMPL (file name), H2, H4, HSLOW
+#        endif
 #      endif
 #    endif
 #  endif
 #endif
-
+  
 #define RANDOM(n) (xrand() % (n))
 static unsigned int xseed = 0x11223344;
 static inline unsigned int xrand(void) {
@@ -71,15 +94,31 @@ double TI, TD;
 double TIR, TDR;
 double TIRAND, TDRAND;
 double TIRANDR, TDRANDR;
+
+#ifdef KNH_BINDING
+#define HEAP_INSERT(k, v) KNHeap__insert(heap, &k, reinterpret_cast<void*>(v))
+#define HEAP_REMOVE(k, v) KNHeap__deleteMin(heap, k, v)
+#define HEAP_SIZE() KNHeap__getSize(heap)
+inline void onePass(void* heap, int n, int curr, int max)
+#else
+#define HEAP_INSERT(k, v) heap.insert(k, v)
+#define HEAP_REMOVE(k, v) heap.deleteMin(k, v)
+#define HEAP_SIZE() heap.getSize()
 inline void onePass(HTYPE& heap, int n, int curr, int max)
+#endif
 {
   TI = 0; TD = 0;
   TIR = 0; TDR = 0;
   TIRAND = 0; TDRAND = 0;
   TIRANDR = 0; TDRANDR = 0;
 
-  int j, k, v;
-  double insertSum=0, deleteSum=0;
+  int j, k;
+#ifdef KNH_BINDING
+  void*v;
+#else
+  int v;
+#endif
+  unsigned long long insertSum=0, deleteSum=0;
 
   int *keys = (int*)malloc(sizeof(int) * n);
   if (keys == NULL) {
@@ -96,7 +135,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    HEAP_INSERT(keys[j], keys[j]);
     double e = cpuTime();
     TIRAND += e - s;
     insertSum += keys[j];
@@ -109,11 +148,13 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    HEAP_REMOVE(&k, &v);
     double e = cpuTime();
     deleteSum += k;
     TDRAND += e - s;
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j);
+#endif
     //std::cout << "seq [" << k << ", " << v << "] out\n";
   }
 
@@ -124,7 +165,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = n-1;  j != -1;  j--) {
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    HEAP_INSERT(keys[j], keys[j]);
     double e = cpuTime();
     TIRANDR += e - s;
     insertSum += keys[j];
@@ -137,11 +178,13 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    HEAP_REMOVE(&k, &v);
     double e = cpuTime();
     deleteSum += k;
     TDRANDR += e - s;
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j);
+#endif
     //std::cout << "rev seq [" << k << ", " << v << "] out\n";
   }
 
@@ -153,7 +196,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   for (j = 0;  j < n;  j++) {
     keys[j] = j+1;
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    HEAP_INSERT(keys[j], keys[j]);
     double e = cpuTime();
     TI += e - s;
     insertSum += keys[j];
@@ -166,11 +209,13 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    HEAP_REMOVE(&k, &v);
     double e = cpuTime();
     deleteSum += k;
     TD += e - s;
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j+1);
+#endif
     //std::cout << "seq [" << k << ", " << v << "] out\n";
   }
 
@@ -181,7 +226,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = n-1;  j != -1;  j--) {
     double s = cpuTime();
-    heap.insert(keys[j], keys[j]);
+    HEAP_INSERT(keys[j], keys[j]);
     double e = cpuTime();
     TIR += e - s;
     insertSum += keys[j];
@@ -195,14 +240,16 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
   }
   for (j = 0;  j < n;  j++) {
     double s = cpuTime();
-    heap.deleteMin(&k, &v);
+    HEAP_REMOVE(&k, &v);
     double e = cpuTime();
     deleteSum += k;
     TDR += e - s;
+#ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
     Assert(k == j+1);
+#endif
     //std::cout << "rev seq [" << k << ", " << v << "] out\n";
   }
-  Assert(heap.getSize() == 0);
+  Assert(HEAP_SIZE() == 0);
   Assert(deleteSum == insertSum);
   puts("done");
 }
@@ -210,7 +257,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
 
 int main(int argc, char **argv)
 {
-  if (argc == 0) {
+  if (argc < 2) {
     puts("usage: prog <elements> <iterations (default = 1)>");
     return -1;
   }
@@ -236,12 +283,6 @@ int main(int argc, char **argv)
     }
   }
   repeat++;
-  //#ifdef H2
-  //HTYPE *temp = new HTYPE(INT_MAX, -INT_MAX);
-  //HTYPE& heap =*temp;
-  //#else
-  HTYPE HINIT;
-  //#endif
 
   #define DECLA(p, title) const char * field_##p = title; int len_##p = strlen(title); char ** array_##p = new char*[repeat]; for(int i = 0; i < repeat; i++) array_##p [i] = new char[4096];
   #define DELA(p, unused) for(int i = 0; i < repeat; i++) delete[] array_##p[i]; delete[] array_##p;
@@ -256,7 +297,13 @@ int main(int argc, char **argv)
   DECLA(h, "insert (rs)");
   DECLA(i, "delete (rs)");
 
-  #define M(p) len_##p = max(len_##p, strlen(array_##p [i]))
+  #define M(p) len_##p = std::max<decltype(len_##p)>(len_##p, strlen(array_##p [i]))
+
+#ifdef KNH_BINDING
+  void * heap = KNHeap__create();
+#else
+  HTYPE HINIT;
+#endif
 
   for (int i = 0; i < repeat; i++) {
     onePass(heap, n, i, repeat);
@@ -282,13 +329,25 @@ int main(int argc, char **argv)
     M(i);
   }
 
+#ifdef KNH_BINDING
+  KNHeap__destroy(heap);
+#endif
+
   #define F(p) len_##p, field_##p
   #define V(p) len_##p, array_##p [i]
 
+#define STR1(X) #X
+#define STR(X) STR1(X)
+
   printf(
-    "r = random\ns = sequence\nrr = random, reversed\nrs = sequence, reversed\nall fields (except for iteration) are shown in seconds\n\n"
+    "r = random\ns = sequence\nrr = random, reversed\nrs = sequence, reversed\nall fields (except for iteration) are shown in seconds\n\nintegration_type: %s\n\n"
     "%*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s  |  %*s\n",
-    F(a), F(k), F(b), F(c), F(d), F(e), F(f), F(g), F(h), F(i)
+#ifdef KNH_BINDING
+      STR((KN____ARRAY)),
+#else
+      STR((HTYPE)),
+#endif
+      F(a), F(k), F(b), F(c), F(d), F(e), F(f), F(g), F(h), F(i)
   );
 
   for (int i = 0; i < repeat; i++) {
