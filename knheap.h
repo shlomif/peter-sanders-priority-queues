@@ -152,7 +152,7 @@ inline void BinaryHeap<Key, Value, capacity>::
 insert(Key k, Value v)
 {
   Assert2(size < capacity);
-  Debug4(cout << "insert(" << k << ", " << v << ")" << endl);
+  Debug4(std::cout<< "insert(" << k << ", " << v << ")" << std::endl);
 
   size++;
   int hole = size;

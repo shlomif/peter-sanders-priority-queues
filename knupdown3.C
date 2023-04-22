@@ -8,8 +8,12 @@
 #include <stdlib.h>
 #include <math.h>
 
+#ifndef DEBUGLEVEL
 #define DEBUGLEVEL 0
+#endif
+
 #include "util.h"
+
 //#define KNH
 //#define H2
 //#define H4
@@ -18,7 +22,17 @@
 #ifndef DISABLE_ELEMENT_ORDER_ASSERTIONS
   #warning element order assertions are enabled, element removal will be checked for sorted order, define DISABLE_ELEMENT_ORDER_ASSERTIONS to disable this check
 #endif
-  
+
+#define KNH_STR2(X) #X
+#define KNH_STR(X) KNH_STR2(X)
+
+#ifndef KNH_BINDING_IMPL
+#define KNH_BINDING_IMPL knheap_c_binding.c
+#define KNH_BINDING_INCLUDE KNH_STR(KNH_BINDING_IMPL)
+#else
+#define KNH_BINDING_INCLUDE KNH_STR(KNH_BINDING_IMPL)
+#endif
+
 #ifdef KNH
 #  include "knheap.C"
 #  define HTYPE KNHeap<int, int>
@@ -26,7 +40,7 @@
 #else
 #  ifdef KNH_BINDING
 #    include "knheap_c_binding.h"
-#    include "knheap_c_binding.c"
+#    include KNH_BINDING_INCLUDE
 #  else
 #    ifdef H4
 #      include "heap4.h"
@@ -43,7 +57,7 @@
 #          define HTYPE Heap2<int, int>
 #          define HINIT heap(INT_MAX, -INT_MAX, n)
 #        else
-#          error must define either: KNH, KNH_BINDING, H2, H4, HSLOW
+#          error must define either: KNH, KNH_BINDING and KNH_BINDING_IMPL (file name), H2, H4, HSLOW
 #        endif
 #      endif
 #    endif
@@ -89,7 +103,7 @@ inline void onePass(void* heap, int n, int curr, int max)
 #else
 #define HEAP_INSERT(k, v) heap.insert(k, v)
 #define HEAP_REMOVE(k, v) heap.deleteMin(k, v)
-#define HEAP_SIZE() heap.size()
+#define HEAP_SIZE() heap.getSize()
 inline void onePass(HTYPE& heap, int n, int curr, int max)
 #endif
 {
@@ -243,7 +257,7 @@ inline void onePass(HTYPE& heap, int n, int curr, int max)
 
 int main(int argc, char **argv)
 {
-  if (argc == 0) {
+  if (argc < 2) {
     puts("usage: prog <elements> <iterations (default = 1)>");
     return -1;
   }
@@ -283,7 +297,7 @@ int main(int argc, char **argv)
   DECLA(h, "insert (rs)");
   DECLA(i, "delete (rs)");
 
-  #define M(p) len_##p = max(len_##p, strlen(array_##p [i]))
+  #define M(p) len_##p = std::max<decltype(len_##p)>(len_##p, strlen(array_##p [i]))
 
 #ifdef KNH_BINDING
   void * heap = KNHeap__create();

@@ -53,6 +53,8 @@
 #define Debug6(A)
 #endif
 
+#include <iostream>
+
 #define Assert(c) if(!(c))\
   {std::cout << "\nAssertion violation (" #c ") " << __FILE__ << ":" << __LINE__ << std::endl;}
 #define Assert0(C) Debug0(Assert(C))

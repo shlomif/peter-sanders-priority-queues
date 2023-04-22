@@ -1,6 +1,8 @@
 #include <limits.h>
 
+#ifndef DEBUGLEVEL
 #define DEBUGLEVEL 0
+#endif
 
 #include "knheap.C"
 
@@ -23,6 +25,6 @@ void  KNHeap__getMin(void* instance, int *key, void* *value) {
 void  KNHeap__deleteMin(void* instance, int *key, void* *value) {
     reinterpret_cast<KNHeap<int, void*>*>(instance)->deleteMin(key, value);
 }
-void  KNHeap__insert(void* instance, int key, void* value) {
-    reinterpret_cast<KNHeap<int, void*>*>(instance)->insert(key, value);
+void  KNHeap__insert(void* instance, int *key, void* value) {
+    reinterpret_cast<KNHeap<int, void*>*>(instance)->insert(*key, value);
 }
